@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-from . import opdxtype
+from opdxread import opdxtype
 
 from typing import Any, Dict
 
