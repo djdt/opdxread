@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-import opdxtype
+from . import opdxtype
 
 from typing import Any, Dict
 
@@ -43,7 +43,7 @@ class OPDxFile(object):
     def get_1d_data(self, r: float = None, m: float = None) -> np.ndarray:
         scale = self.data["1D_Data"]["Raw"]["DataScale"].value
         x = self.data["1D_Data"]["Raw"]["PositionFunction"].data
-        y = self.data["1D_Data"]["Raw"]["Array"].array
+        y = self.data["1D_Data"]["Raw"]["Array"].array.copy()
         if r is not None or m is not None:
             y -= self.get_1d_linear_fit(r, m)
         return np.stack((x, y * scale), axis=1)
