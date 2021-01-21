@@ -1,5 +1,5 @@
 import numpy as np
-import os
+from pathlib import Path
 
 from opdxread import opdxtype
 
@@ -7,16 +7,16 @@ from typing import Any, Dict
 
 
 class OPDxFile(object):
-    def __init__(self, path: str):
+    def __init__(self, path: Path):
         self.path = path
-        self.filesize = os.stat(self.path).st_size
+        self.filesize = path.stat().st_size
 
         self.data: Dict[str, Any] = {}
 
         self.read()
 
     def read(self):
-        with open(self.path, "rb") as fp:
+        with self.path.open("rb") as fp:
             assert fp.read(12) == b"VCA DATA\x01\x00\x00\x55"
 
             while fp.tell() < self.filesize:
