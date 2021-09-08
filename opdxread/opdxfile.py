@@ -3,13 +3,13 @@ from pathlib import Path
 
 from opdxread import opdxtype
 
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 
 class OPDxFile(object):
-    def __init__(self, path: Path):
-        self.path = path
-        self.filesize = path.stat().st_size
+    def __init__(self, path: Union[str, Path]):
+        self.path = Path(path)
+        self.filesize = self.path.stat().st_size
 
         self.data: Dict[str, Any] = {}
 
