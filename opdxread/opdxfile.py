@@ -24,26 +24,30 @@ class OPDxFile(object):
                 if item.value is not None:
                     self.data[item.name] = item.value
 
-    def get_1d_linear_fit(self, r: float = None, m: float = None) -> np.ndarray:
+    def get_1d_polynomial_fit(self, xf: np.ndarray, deg: int = 1) -> np.ndarray:
         extent = self.data["1D_Data"]["Raw"]["Extent"].value
-        x = self.data["1D_Data"]["Raw"]["PositionFunction"].data
-        y = self.data["1D_Data"]["Raw"]["Array"].array
-        ydiv = extent / y.size
-
-        r = 0.0 if r is None else (r if r >= 0.0 else extent + r)
-        m = extent if m is None else (m if m >= 0.0 else extent + m)
-        assert m > r
-
-        ir = np.clip(int(r / ydiv), 0, y.size - 1)
-        im = np.clip(int(m / ydiv), 0, y.size - 1)
-
-        coefs = np.polynomial.polynomial.polyfit([r, m], [y[ir], y[im]], 1)
-        return np.polynomial.polynomial.polyval(x, coefs)
-
-    def get_1d_data(self, r: float = None, m: float = None) -> np.ndarray:
         scale = self.data["1D_Data"]["Raw"]["DataScale"].value
         x = self.data["1D_Data"]["Raw"]["PositionFunction"].data
-        y = self.data["1D_Data"]["Raw"]["Array"].array.copy()
+        y = self.data["1D_Data"]["Raw"]["Array"].array
+        xdiv = extent / x.size
+
+        ixf = np.clip(xf / xdiv, 0, x.size - 1).astype(int)
+
+        coefs = np.polynomial.polynomial.polyfit(x[ixf], y[ixf], deg)
+        return np.polynomial.polynomial.polyval(x, coefs) * scale
+
+    def get_1d_data(self, r: float = None, m: float = None) -> np.ndarray:
+        """Return the profilometric data as [:, (x, y)] array.
+
+        If `r` or `m` are passed a linear fit at these x positions is perfromed and subtracted from the data.
+        """
+        extent = self.data["1D_Data"]["Raw"]["Extent"].value
+        scale = self.data["1D_Data"]["Raw"]["DataScale"].value
+        x = self.data["1D_Data"]["Raw"]["PositionFunction"].data
+        y = self.data["1D_Data"]["Raw"]["Array"].array * scale
         if r is not None or m is not None:
-            y -= self.get_1d_linear_fit(r, m)
-        return np.stack((x, y * scale), axis=1)
+            r = 0.0 if r is None else (r if r >= 0.0 else extent + r)
+            m = extent if m is None else (m if m >= 0.0 else extent + m)
+            assert m > r
+            y -= self.get_1d_polynomial_fit(np.array([r, m]), 1)
+        return np.stack((x, y), axis=1)
