@@ -25,6 +25,10 @@ class OPDxFile(object):
                     self.data[item.name] = item.value
 
     def get_1d_polynomial_fit(self, xf: np.ndarray, deg: int = 1) -> np.ndarray:
+        """Return a scaled polynomial fit of data.
+
+        Fitting of a `deg` degree polynomial is performed at all `xf` x positions.
+        """
         extent = self.data["1D_Data"]["Raw"]["Extent"].value
         scale = self.data["1D_Data"]["Raw"]["DataScale"].value
         x = self.data["1D_Data"]["Raw"]["PositionFunction"].data
@@ -37,7 +41,7 @@ class OPDxFile(object):
         return np.polynomial.polynomial.polyval(x, coefs) * scale
 
     def get_1d_data(self, r: float = None, m: float = None) -> np.ndarray:
-        """Return the profilometric data as [:, (x, y)] array.
+        """Return the scaled profilometric data as [:, (x, y)] array.
 
         If `r` or `m` are passed a linear fit at these x positions is perfromed and subtracted from the data.
         """
