@@ -1,9 +1,9 @@
-import numpy as np
 from pathlib import Path
+from typing import Any, Dict, Union
+
+import numpy as np
 
 from opdxread import opdxtype
-
-from typing import Any, Dict, Union
 
 
 class OPDxFile(object):
@@ -40,10 +40,11 @@ class OPDxFile(object):
         coefs = np.polynomial.polynomial.polyfit(x[ixf], y[ixf], deg)
         return np.polynomial.polynomial.polyval(x, coefs) * scale
 
-    def get_1d_data(self, r: float = None, m: float = None) -> np.ndarray:
+    def get_1d_data(self, r: float | None = None, m: float | None = None) -> np.ndarray:
         """Return the scaled profilometric data as [:, (x, y)] array.
 
-        If `r` or `m` are passed a linear fit at these x positions is perfromed and subtracted from the data.
+        If `r` or `m` are passed a linear fit at these x positions
+        is perfromed and subtracted from the data.
         """
         extent = self.data["1D_Data"]["Raw"]["Extent"].value
         scale = self.data["1D_Data"]["Raw"]["DataScale"].value
