@@ -68,5 +68,5 @@ class OPDxFile(object):
         assert m > r
 
         return np.stack(
-            (self.x, self.y - self.get_1d_polynomial_fit(np.array([r, m]), 1))
+            (self.x, self.y - self.get_1d_polynomial_fit(np.array([r, m]), 1)), axis=1
         )
