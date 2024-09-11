@@ -15,6 +15,22 @@ class OPDxFile(object):
 
         self.read()
 
+    @property
+    def extent(self) -> float:
+        return self.data["1D_Data"]["Raw"]["Extent"].value
+
+    @property
+    def scale(self) -> float:
+        return self.data["1D_Data"]["Raw"]["DataScale"].value
+
+    @property
+    def x(self) -> np.ndarray:
+        return self.data["1D_Data"]["Raw"]["PositionFunction"].data
+
+    @property
+    def y(self) -> np.ndarray:
+        return self.data["1D_Data"]["Raw"]["Array"].array * self.scale
+
     def read(self):
         with self.path.open("rb") as fp:
             assert fp.read(12) == b"VCA DATA\x01\x00\x00\x55"
@@ -29,30 +45,28 @@ class OPDxFile(object):
 
         Fitting of a `deg` degree polynomial is performed at all `xf` x positions.
         """
-        extent = self.data["1D_Data"]["Raw"]["Extent"].value
-        scale = self.data["1D_Data"]["Raw"]["DataScale"].value
-        x = self.data["1D_Data"]["Raw"]["PositionFunction"].data
-        y = self.data["1D_Data"]["Raw"]["Array"].array
-        xdiv = extent / x.size
-
-        ixf = np.clip(xf / xdiv, 0, x.size - 1).astype(int)
-
-        coefs = np.polynomial.polynomial.polyfit(x[ixf], y[ixf], deg)
-        return np.polynomial.polynomial.polyval(x, coefs) * scale
+        idx = np.searchsorted(self.x, xf)
+        coefs = np.polynomial.polynomial.polyfit(self.x[idx], self.y[idx], deg)
+        return np.polynomial.polynomial.polyval(self.x, coefs)
 
     def get_1d_data(self, r: float | None = None, m: float | None = None) -> np.ndarray:
-        """Return the scaled profilometric data as [:, (x, y)] array.
+        """Return the scaled profilometric data.
 
-        If `r` or `m` are passed a linear fit at these x positions
-        is perfromed and subtracted from the data.
+        Args:
+            r: start x pos of linear fit, defaults to 0
+            m: end x pos of linear fit, defaults to end
+
+        Returns:
+            array (:, [x, y])
         """
-        extent = self.data["1D_Data"]["Raw"]["Extent"].value
-        scale = self.data["1D_Data"]["Raw"]["DataScale"].value
-        x = self.data["1D_Data"]["Raw"]["PositionFunction"].data
-        y = self.data["1D_Data"]["Raw"]["Array"].array * scale
-        if r is not None or m is not None:
-            r = 0.0 if r is None else (r if r >= 0.0 else extent + r)
-            m = extent if m is None else (m if m >= 0.0 else extent + m)
-            assert m > r
-            y -= self.get_1d_polynomial_fit(np.array([r, m]), 1)
-        return np.stack((x, y), axis=1)
+        if r is None:
+            r = 0.0
+        if m is None:
+            m = self.extent
+        elif m < 0.0:
+            m = self.extent - m
+        assert m > r
+
+        return np.stack(
+            (self.x, self.y - self.get_1d_polynomial_fit(np.array([r, m]), 1))
+        )
