@@ -46,6 +46,7 @@ class OPDxFile(object):
         Fitting of a `deg` degree polynomial is performed at all `xf` x positions.
         """
         idx = np.searchsorted(self.x, xf)
+        idx = np.clip(idx, 0, self.x.size - 1)
         coefs = np.polynomial.polynomial.polyfit(self.x[idx], self.y[idx], deg)
         return np.polynomial.polynomial.polyval(self.x, coefs)
 
