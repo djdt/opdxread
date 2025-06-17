@@ -1,0 +1,9 @@
+pyproject.toml
+src/opdxread/__init__.py
+src/opdxread/opdxfile.py
+src/opdxread/opdxtype.py
+src/opdxread.egg-info/PKG-INFO
+src/opdxread.egg-info/SOURCES.txt
+src/opdxread.egg-info/dependency_links.txt
+src/opdxread.egg-info/requires.txt
+src/opdxread.egg-info/top_level.txt

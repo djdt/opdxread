@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: opdxread
+Version: 0.1.2
+Summary: Lib for reading Vision64 profilometry data from .OPDx files.
+Author-email: Thomas Lockwood <thomas.lockwood@uts.edu.au>
+License-Expression: LGPL-3.0-or-later
+Project-URL: Repository, https://gtihub.com/djdt/opdxread
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.22
